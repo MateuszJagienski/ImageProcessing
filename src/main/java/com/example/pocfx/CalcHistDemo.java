@@ -2,6 +2,8 @@ package com.example.pocfx;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javafx.scene.image.Image;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -12,12 +14,12 @@ import org.opencv.core.Scalar;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-class CalcHist {
-    public void run(String[] args) {
-        String filename = args.length > 0 ? args[0] : "H:\\Mateusz\\demo (1)\\pocFx\\src\\main\\resources\\images\\jp2.jpg";
-        Mat src = Imgcodecs.imread(filename);
+public class CalcHistDemo {
+    public void run(String image) {
+        Mat src = Imgcodecs.imread(image);
+        System.out.println(src);
         if (src.empty()) {
-            System.err.println("Cannot read image: " + filename);
+            System.err.println("Cannot read image: " + image);
             System.exit(0);
         }
         List<Mat> bgrPlanes = new ArrayList<>();
@@ -54,12 +56,5 @@ class CalcHist {
         HighGui.imshow( "calcHist Demo", histImage );
         HighGui.waitKey(0);
         System.exit(0);
-    }
-}
-public class CalcHistDemo {
-    public static void main(String[] args) {
-        // Load the native OpenCV library
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        new CalcHist().run(args);
     }
 }
