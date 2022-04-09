@@ -12,6 +12,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.image.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
@@ -51,6 +52,7 @@ public class HelloApplication extends Application {
     private int imageWidth;
     private int imageHeight;
     private String imageFilename;
+    private CalcHistDemo calcHistDemo;
 
     @Override
     public void start(Stage primaryStage) throws IOException {
@@ -65,6 +67,7 @@ public class HelloApplication extends Application {
         primaryStage.show();
     }
 
+    // funkcja tworzaca nowe okno, inicjalizujaca obiekty
     private Parent create() {
         VBox vbox = new VBox();
         vbox.setPadding( new Insets(10) );
@@ -79,26 +82,22 @@ public class HelloApplication extends Application {
         thresholdingBtn = new Button("Thresholding");
         min = new TextField();
         max = new TextField();
+        max.setTextFormatter(new TextFormatter<>(c -> {
+            if (!c.getText().matches("\\d")) {
+                c.setText("");
+            }
+            return c;
+        }));
         min.setMaxWidth(50);
         max.setMaxWidth(50);
-        min.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue,
-                                String newValue) {
-                if (!newValue.matches("\\d*")) {
-                    min.setText(newValue.replaceAll("[^\\d]", ""));
-                }
+        min.setPromptText("min");
+        max.setPromptText("max");
+        min.setTextFormatter(new TextFormatter<>(c -> {
+            if (!c.getText().matches("\\d")) {
+                c.setText("");
             }
-        });
-        max.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue,
-                                String newValue) {
-                if (!newValue.matches("\\d*")) {
-                    max.setText(newValue.replaceAll("[^\\d]", ""));
-                }
-            }
-        });
+            return c;
+        }));
         loadImageBtn.setOnAction(actionEvent -> {
             try {
                 loadImage(actionEvent);
@@ -125,16 +124,27 @@ public class HelloApplication extends Application {
 
     }
 
+    /**Progowanie (ang. thresholding) – metoda uzyskiwania obrazu binarnego (posiadającego tylko kolor
+     biały i czarny) na podstawie obrazu kolorowego lub w odcieniach szarości. Polega na wyznaczeniu dla
+     danego obrazu progu jasności, a następnie piksele jaśniejsze od wyznaczonego progu otrzymują jedną
+     wartość, a ciemniejsze drugą. Częstym zastosowaniem progowania jest oddzielenie obiektów
+     pierwszoplanowych od tła.**/
+    // funkcja wykorzystuje podany przez uzytkownika prog lub, jesli nie jest podany uzyta zostanie wartosc wyliczona z histogramu
     private void thresholding(ActionEvent actionEvent) {
-
-//        if (!min.getText().isBlank()) {
-//            if (Integer.parseInt(max.getText()) > 255) a = 255;
-//        }
-//        if (!max.getText().isBlank()) {
-//            if (Integer.parseInt(max.getText()) > 255) a = 255;
-//        }
-        int minimum = Integer.parseInt(min.getText());
-        int maximum = Integer.parseInt(max.getText());
+        int minimum = 100;
+        int maximum = 150;
+        if (!min.getText().isBlank()) {
+           minimum  = Integer.parseInt(min.getText());
+        }
+        if (!max.getText().isBlank()) {
+            maximum = Integer.parseInt(max.getText());
+        }
+        if (maximum > 255) {
+            maximum = 255;
+        }
+        if (minimum > 255) {
+            minimum = 255;
+        }
         int R,G,B;
         int avg;
         Color color;
@@ -150,10 +160,10 @@ public class HelloApplication extends Application {
                 G = (int) (g * 255);
                 B = (int) (b * 255);
                 avg = (R + G + B) / 3;
-                if (avg > minimum && avg < maximum) {
+                if (avg > calcHistDemo.getPeakHist()) {
                     color1  = Color.rgb(0, 0, 0);
                 } else {
-                    color1  = color;
+                    color1  = Color.rgb(255, 255, 255);
                 }
                 pixelWriter.setColor(i, j, color1);
             }
@@ -161,17 +171,17 @@ public class HelloApplication extends Application {
         imageView.setImage(writableImage);
     }
 
-    // funkcja zapisujaca aktualnie przegladane zdjecie do pliku, plik widoczny w folderze po zamknieciu programu
+    // funkcja zapisujaca aktualnie przegladane zdjecie do pliku, plik jest widoczny w folderze po zamknieciu programu
     private void saveImage(ActionEvent actionEvent) {
         saveImageToJpg(writableImage);
     }
 
+    // funkcja wywoujaca clase od histogramu
     private void calcHist(ActionEvent actionEvent) {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        CalcHistDemo calcHistDemo = new CalcHistDemo();
-        calcHistDemo.run(imageFilename);
+        calcHistDemo.showHistogram();
     }
 
+    // zmienia obraz na odcienie szarosci przez zmiane warotsci RGB ale srednia wylicza z YUV
     private void changeGreyYUV(ActionEvent actionEvent) {
         int R,G,B;
         int avg;
@@ -198,7 +208,7 @@ public class HelloApplication extends Application {
     }
 
 
-
+    // funkcja zmienia kolor obrazu przez przypisanie wartoscia R G B wartosci sredniej, obraz zostaje zmieniony w odcienie szarosci
     private void changeGrey(ActionEvent actionEvent) {
         int R,G,B;
         int avg;
@@ -223,6 +233,7 @@ public class HelloApplication extends Application {
         imageView.setImage(writableImage);
     }
 
+    // funkcja zmienia kolor obrazu w zaleznosci od podanych wartosci R, G, B
     private void changeColor(ActionEvent actionEvent) throws NullPointerException {
         int R,G,B;
         Color color;
@@ -246,6 +257,7 @@ public class HelloApplication extends Application {
         saveImageToJpg(writableImage);
     }
 
+    // funkcja ładująca zdjecia
     private void loadImage(ActionEvent actionEvent) throws URISyntaxException, FileNotFoundException {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File("src/main/resources"));
@@ -265,7 +277,9 @@ public class HelloApplication extends Application {
             imageWidth = (int) image.getWidth();
             imageHeight = (int) image.getHeight();
         }
-
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        calcHistDemo = new CalcHistDemo();
+        calcHistDemo.run(imageFilename);
     }
 
     // funkacja zapisujaca do pliku

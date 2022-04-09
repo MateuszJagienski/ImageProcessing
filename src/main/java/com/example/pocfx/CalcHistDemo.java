@@ -15,8 +15,15 @@ import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 public class CalcHistDemo {
+
+    private Mat src;
+    private Mat histImage;
+    private float bMax;
+    private float gMax;
+    private float rMax;
+
     public void run(String image) {
-        Mat src = Imgcodecs.imread(image);
+        src = Imgcodecs.imread(image);
         System.out.println(src);
         if (src.empty()) {
             System.err.println("Cannot read image: " + image);
@@ -34,7 +41,7 @@ public class CalcHistDemo {
         Imgproc.calcHist(bgrPlanes, new MatOfInt(2), new Mat(), rHist, new MatOfInt(histSize), histRange, accumulate);
         int histW = 512, histH = 400;
         int binW = (int) Math.round((double) histW / histSize);
-        Mat histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
+        histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
         Core.normalize(bHist, bHist, 0, histImage.rows(), Core.NORM_MINMAX);
         Core.normalize(gHist, gHist, 0, histImage.rows(), Core.NORM_MINMAX);
         Core.normalize(rHist, rHist, 0, histImage.rows(), Core.NORM_MINMAX);
@@ -44,6 +51,21 @@ public class CalcHistDemo {
         gHist.get(0, 0, gHistData);
         float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
         rHist.get(0, 0, rHistData);
+        for (float f: bHistData) {
+            if (f > bMax && f < 255) {
+                bMax = f;
+            }
+        }
+        for (float f: bHistData) {
+            if (f > gMax && f < 255) {
+                gMax = f;
+            }
+        }
+        for (float f: bHistData) {
+            if (f > rMax && f < 255) {
+                rMax = f;
+            }
+        }
         for( int i = 1; i < histSize; i++ ) {
             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(bHistData[i - 1])),
                     new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 0, 0), 2);
@@ -52,9 +74,19 @@ public class CalcHistDemo {
             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(rHistData[i - 1])),
                     new Point(binW * (i), histH - Math.round(rHistData[i])), new Scalar(0, 0, 255), 2);
         }
+    }
+
+    public void showHistogram() {
         HighGui.imshow( "Source image", src );
         HighGui.imshow( "calcHist Demo", histImage );
         HighGui.waitKey(0);
-        System.exit(0);
+        HighGui.destroyAllWindows();
+    }
+
+    public int getPeakHist() {
+        if (bMax > gMax && bMax > rMax) {
+            return (int) bMax;
+        }
+        return gMax > rMax ? (int) gMax : (int) rMax;
     }
 }
