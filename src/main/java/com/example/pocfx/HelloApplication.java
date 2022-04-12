@@ -1,23 +1,18 @@
 package com.example.pocfx;
 
-import com.example.pocfx.color.ColorRGB;
-import com.example.pocfx.color.ColorYUV;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
 import javafx.scene.image.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.opencv.core.Core;
@@ -27,7 +22,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -35,17 +29,27 @@ public class HelloApplication extends Application {
 
     private HBox buttonHbox;
     private Button loadImageBtn;
+    private Button loadImageBtn1;
     private Button doSomethingBtn;
     private Button greyBtn;
     private Button greyBtn1;
     private Button calcHistBtn;
     private Button saveBtn;
     private Button thresholdingBtn;
+    private Button selectImageBtn;
+    private Button selectImageBtn1;
+    private Button imageSubtractionBtn;
+
+
     private TextField min;
     private TextField max;
+
     private ImageView imageView;
+    private ImageView imageView1;
+    private ImageView imageViewResult;
     private Image image;
     private Image copyImage;
+
     private PixelReader pixelReader;
     private PixelWriter pixelWriter;
     private WritableImage writableImage;
@@ -61,17 +65,14 @@ public class HelloApplication extends Application {
         Scene scene = new Scene(p);
 
         primaryStage.setTitle("POC1");
-        primaryStage.setWidth(1000);
-        primaryStage.setHeight(1000);
+        primaryStage.setWidth(800);
+        primaryStage.setHeight(800);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    // funkcja tworzaca nowe okno, inicjalizujaca obiekty
-    private Parent create() {
-        VBox vbox = new VBox();
-        vbox.setPadding( new Insets(10) );
-        vbox.setSpacing( 10 );
+    // funkcja tworzaca nowe okno
+    private Parent create() throws IOException {
 
         loadImageBtn = new Button("Load image");
         doSomethingBtn = new Button("Change color");
@@ -80,6 +81,10 @@ public class HelloApplication extends Application {
         calcHistBtn = new Button("Cals hist");
         saveBtn = new Button("Save");
         thresholdingBtn = new Button("Thresholding");
+        loadImageBtn1 = new Button("Load image");
+        selectImageBtn = new Button("Select");
+        selectImageBtn1 = new Button("Select");
+        imageSubtractionBtn = new Button("Subtract images");
         min = new TextField();
         max = new TextField();
         max.setTextFormatter(new TextFormatter<>(c -> {
@@ -100,28 +105,92 @@ public class HelloApplication extends Application {
         }));
         loadImageBtn.setOnAction(actionEvent -> {
             try {
-                loadImage(actionEvent);
-            } catch (URISyntaxException | FileNotFoundException e) {
+                uploadImage(actionEvent, imageView);
+            } catch (URISyntaxException | IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        loadImageBtn1.setOnAction(actionEvent -> {
+            try {
+                uploadImage(actionEvent, imageView1);
+            } catch (URISyntaxException | IOException e) {
                 e.printStackTrace();
             }
         });
         doSomethingBtn.setOnAction(this::changeColor);
-        greyBtn.setOnAction(this::changeGrey);
+        greyBtn.setOnAction(this::changeGreyRGB);
         greyBtn1.setOnAction(this::changeGreyYUV);
-        calcHistBtn.setOnAction(this::calcHist);
+        calcHistBtn.setOnAction(actionEvent -> {
+            try {
+                calcHist(actionEvent);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
         saveBtn.setOnAction(this::saveImage);
         thresholdingBtn.setOnAction(this::thresholding);
+        imageSubtractionBtn.setOnAction(actionEvent1 -> {
+            try {
+                imageSubtraction(actionEvent1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        calcHistDemo = new CalcHistDemo();
         imageView = new ImageView();
+        imageView1 = new ImageView();
+        loadImage(imageView, "src/main/resources/Images/jp2.jpg");
+        loadImage(imageView1, "src/main/resources/Images/jp2.jpg");
 
-        buttonHbox = new HBox();
-        buttonHbox.setSpacing(5);
-        buttonHbox.getChildren().addAll(loadImageBtn, doSomethingBtn, greyBtn, greyBtn1, calcHistBtn, saveBtn, thresholdingBtn, min, max);
+        selectImageBtn.setOnAction(actionEvent -> {
+            try {
+                selectImage(actionEvent, imageView.getImage());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        selectImageBtn1.setOnAction(actionEvent -> {
+            try {
+                selectImage(actionEvent, imageView1.getImage());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
-        vbox.getChildren().addAll(buttonHbox, imageView);
-
+        imageViewResult = new ImageView();
+        imageViewResult.setFitWidth(350);
+        imageViewResult.setFitHeight(350);
+        imageViewResult.setPreserveRatio(true);
+        VBox vbox = organizeNodes();
 
         return vbox;
 
+    }
+
+    private void imageSubtraction(ActionEvent actionEvent) throws IOException {
+        imageViewResult.setImage(calcHistDemo.imageSubtraction());
+    }
+
+    private VBox organizeNodes() {
+        VBox vbox = new VBox();
+        vbox.setPadding( new Insets(10) );
+        vbox.setSpacing( 10 );
+
+        buttonHbox = new HBox();
+        buttonHbox.setSpacing(5);
+        HBox imageButtonHbox = new HBox();
+        HBox imageButtonHbox1 = new HBox();
+        imageButtonHbox.getChildren().addAll(loadImageBtn, selectImageBtn);
+        imageButtonHbox1.getChildren().addAll(loadImageBtn1, selectImageBtn1);
+
+        VBox imageViewVbox = new VBox(imageView, imageButtonHbox);
+        VBox imageViewVbox1 = new VBox(imageView1, imageButtonHbox1);
+        HBox imageHbox = new HBox(imageViewVbox, imageViewVbox1);
+        buttonHbox.getChildren().addAll(doSomethingBtn, greyBtn, greyBtn1, calcHistBtn, saveBtn, thresholdingBtn, min, max, imageSubtractionBtn);
+
+        vbox.getChildren().addAll(buttonHbox, imageHbox, imageViewResult);
+        return vbox;
     }
 
     /**Progowanie (ang. thresholding) – metoda uzyskiwania obrazu binarnego (posiadającego tylko kolor
@@ -131,134 +200,48 @@ public class HelloApplication extends Application {
      pierwszoplanowych od tła.**/
     // funkcja wykorzystuje podany przez uzytkownika prog lub, jesli nie jest podany uzyta zostanie wartosc wyliczona z histogramu
     private void thresholding(ActionEvent actionEvent) {
-        int minimum = 100;
-        int maximum = 150;
-        if (!min.getText().isBlank()) {
-           minimum  = Integer.parseInt(min.getText());
+        if (min.getText().isBlank() || max.getText().isBlank()) {
+            System.out.println(calcHistDemo);
+            imageViewResult.setImage(calcHistDemo.calcThreshold());
+        } else {
+            int minimum = Integer.parseInt(min.getText());
+            int maximum = Integer.parseInt(max.getText());
+            imageViewResult.setImage(calcHistDemo.calcThresholdWithUserInput(minimum, maximum));
         }
-        if (!max.getText().isBlank()) {
-            maximum = Integer.parseInt(max.getText());
-        }
-        if (maximum > 255) {
-            maximum = 255;
-        }
-        if (minimum > 255) {
-            minimum = 255;
-        }
-        int R,G,B;
-        int avg;
-        Color color;
-        Color color1;
-        int tresh = 150;
-        for(int i=0; i<imageWidth; i++) {
-            for (int j = 0; j < imageHeight; j++) {
-                color = copyImage.getPixelReader().getColor(i,j);
-                double r = color.getRed();
-                double g = color.getGreen();
-                double b = color.getBlue();
-                R = (int) (r * 255);
-                G = (int) (g * 255);
-                B = (int) (b * 255);
-                avg = (R + G + B) / 3;
-                if (avg > calcHistDemo.getPeakHist()) {
-                    color1  = Color.rgb(0, 0, 0);
-                } else {
-                    color1  = Color.rgb(255, 255, 255);
-                }
-                pixelWriter.setColor(i, j, color1);
-            }
-        }
-        imageView.setImage(writableImage);
     }
 
     // funkcja zapisujaca aktualnie przegladane zdjecie do pliku, plik jest widoczny w folderze po zamknieciu programu
     private void saveImage(ActionEvent actionEvent) {
-        saveImageToJpg(writableImage);
+        if (imageViewResult.getImage() == null) {
+            System.out.println("Brak zdjecia do zapisania!");
+        } else {
+            saveImageToJpg(imageViewResult.getImage());
+        }
     }
 
     // funkcja wywoujaca clase od histogramu
-    private void calcHist(ActionEvent actionEvent) {
-        calcHistDemo.showHistogram();
+    private void calcHist(ActionEvent actionEvent) throws IOException {
+        imageViewResult.setImage(calcHistDemo.calcHistogram(copyImage));
     }
 
     // zmienia obraz na odcienie szarosci przez zmiane warotsci RGB ale srednia wylicza z YUV
     private void changeGreyYUV(ActionEvent actionEvent) {
-        int R,G,B;
-        int avg;
-        Color color;
-        Color color1;
-        for(int i=0; i<imageWidth; i++) {
-            for (int j = 0; j < imageHeight; j++) {
-                color = copyImage.getPixelReader().getColor(i,j);
-                double r = color.getRed();
-                double g = color.getGreen();
-                double b = color.getBlue();
-                R = (int) (r * 255);
-                G = (int) (g * 255);
-                B = (int) (b * 255);
-
-                avg = (int) (0.299 * R + 0.587 * G + 0.114 * B);
-
-
-                color1  = Color.rgb(avg, avg, avg);
-                pixelWriter.setColor(i, j, color1);
-            }
-        }
-        imageView.setImage(writableImage);
+        imageViewResult.setImage(calcHistDemo.greyScaleYUV());
     }
 
 
     // funkcja zmienia kolor obrazu przez przypisanie wartoscia R G B wartosci sredniej, obraz zostaje zmieniony w odcienie szarosci
-    private void changeGrey(ActionEvent actionEvent) {
-        int R,G,B;
-        int avg;
-        Color color;
-        Color color1;
-        for(int i=0; i < imageWidth; i++) {
-            for (int j = 0; j < imageHeight; j++) {
-                color = copyImage.getPixelReader().getColor(i,j);
-                double r = color.getRed();
-                double g = color.getGreen();
-                double b = color.getBlue();
-                R = (int) (r * 255);
-                G = (int) (g * 255);
-                B = (int) (b * 255);
-                avg = (R + G + B) / 3;
-
-                color1  = Color.rgb(avg, avg, avg);
-
-                pixelWriter.setColor(i, j, color1);
-            }
-        }
-        imageView.setImage(writableImage);
+    private void changeGreyRGB(ActionEvent actionEvent) {
+        imageViewResult.setImage(calcHistDemo.greyScaleRGB());
     }
 
     // funkcja zmienia kolor obrazu w zaleznosci od podanych wartosci R, G, B
     private void changeColor(ActionEvent actionEvent) throws NullPointerException {
-        int R,G,B;
-        Color color;
-        Color color1;
-        for(int i=0; i < imageWidth; i++) {
-            for (int j = 0; j < imageHeight; j++) {
-                color = copyImage.getPixelReader().getColor(i,j);
-                double r = color.getRed();
-                double g = color.getGreen();
-                double b = color.getBlue();
-                R = (int) (r * 255);
-                G = (int) (g * 255);
-                B = (int) (b * 255);
-
-                color1  = Color.rgb(G, G, G);
-
-                pixelWriter.setColor(i, j, color1);
-            }
-        }
-        imageView.setImage(writableImage);
-        saveImageToJpg(writableImage);
+        imageViewResult.setImage(calcHistDemo.changeColor());
     }
 
     // funkcja ładująca zdjecia
-    private void loadImage(ActionEvent actionEvent) throws URISyntaxException, FileNotFoundException {
+    private void uploadImage(ActionEvent actionEvent, ImageView imageView) throws URISyntaxException, IOException {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File("src/main/resources"));
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("jpg file", "*.jpg"),
@@ -266,27 +249,40 @@ public class HelloApplication extends Application {
         File f = fileChooser.showOpenDialog(null);
         if (f != null) {
             imageFilename = f.toString();
-            image = new Image(new FileInputStream(imageFilename));
-            imageView.setImage(image);
-            imageView.setPreserveRatio(true);
-            imageView.setFitHeight(200);
-            imageView.setFitWidth(200);
-            writableImage = new WritableImage((int) image.getWidth(), (int) image.getHeight());
-            pixelWriter = writableImage.getPixelWriter();
-            copyImage = image;
-            imageWidth = (int) image.getWidth();
-            imageHeight = (int) image.getHeight();
+            loadImage(imageView, imageFilename);
         }
+    }
+
+    private void loadImage(ImageView imageView, String imageFilename) throws IOException {
+        image = new Image(new FileInputStream(imageFilename));
+        imageView.setImage(image);
+        imageView.setPreserveRatio(true);
+        imageView.setFitHeight(350);
+        imageView.setFitWidth(350);
+        selectImage(null, image);
+    }
+
+    private void selectImage(ActionEvent actionEvent, Image image) throws IOException {
+        writableImage = new WritableImage((int) image.getWidth(), (int) image.getHeight());
+        pixelWriter = writableImage.getPixelWriter();
+        copyImage = image;
+        imageWidth = (int) image.getWidth();
+        imageHeight = (int) image.getHeight();
+
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        calcHistDemo = new CalcHistDemo();
-        calcHistDemo.run(imageFilename);
+        calcHistDemo.setWritableImage(writableImage);
+        calcHistDemo.setPixelWriter(pixelWriter);
+        calcHistDemo.setFirstImage(imageView.getImage());
+        calcHistDemo.setSecondImage(imageView1.getImage());
+        calcHistDemo.setSelectedImage(image);
+        calcHistDemo.run();
     }
 
     // funkacja zapisujaca do pliku
     private void saveImageToJpg(Image imageFx) {
         BufferedImage image = SwingFXUtils.fromFXImage(imageFx, null);
 
-// Remove alpha-channel from buffered image:
+    // Remove alpha-channel from buffered image:
         BufferedImage imageRGB = new BufferedImage(
                 image.getWidth(),
                 image.getHeight(),
@@ -297,7 +293,7 @@ public class HelloApplication extends Application {
         graphics.drawImage(image, 0, 0, null);
         String f = writableImage.toString();
 
-        File file = new File("H:\\Mateusz\\demo (1)\\pocFx\\src\\main\\java\\com\\example\\pocfx\\jpg\\" + f.substring(32,39) + ".jpg");
+        File file = new File("src/main/resources/Images/" + f.substring(32,39) + ".jpg");
 
         try {
             ImageIO.write(imageRGB, "jpg", file);

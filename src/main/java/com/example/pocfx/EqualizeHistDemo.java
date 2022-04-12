@@ -7,7 +7,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 class EqualizeHist {
     public void run(String[] args) {
-        String filename = args.length > 0 ? args[0] : "H:\\Mateusz\\demo (1)\\pocFx\\src\\main\\resources\\images\\jp2.jpg";
+        String filename = args.length > 0 ? args[0] : "C:\\Users\\Mateu\\IdeaProjects\\pocFx\\src\\main\\resources\\images\\11.jpg";
         Mat src = Imgcodecs.imread(filename);
         if (src.empty()) {
             System.err.println("Cannot read image: " + filename);
