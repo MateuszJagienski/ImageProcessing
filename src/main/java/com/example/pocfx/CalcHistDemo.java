@@ -2,6 +2,7 @@ package com.example.pocfx;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javafx.scene.image.Image;
@@ -27,7 +28,7 @@ public class CalcHistDemo {
     private Image selectedImage;
 
     public void run() throws IOException {
-        src = ImageConverter.convertImageFxToMat(firstImage);
+        src = ImageConverter.convertImageFxToMat(selectedImage);
         if (src.empty()) {
             System.err.println("Cannot read image: " + firstImage);
             System.exit(0);
@@ -234,10 +235,115 @@ public class CalcHistDemo {
         // writableImage = (WritableImage) ImageConverter.convertImageMatToFx(mat);
         return writableImage;
     }
+
+    public Image imageFilter(String mask) {
+        Color color, color1, filterColor;
+        int R, G, B, avg, avg1, kol;
+        int[][] maska;
+        maska = decode(mask);
+        int K = 0;
+        System.out.println(Arrays.deepToString(maska));
+        for (int[] c: maska) {
+            for (int i : c) {
+                K += i;
+            }
+        }
+        if (K == 0) K = 1;
+        for(int i = 1; i < selectedImage.getWidth() - 1; i++) {
+            for (int j = 1; j < selectedImage.getHeight() - 1; j++) {
+
+                int R1 = 0;
+                int G1 = 0;
+                int B1 = 0;
+
+                for (int i1 = i - 1; i1 <= i + 1; i1++) {
+                    for (int j1 = j - 1; j1 <= j + 1; j1++) {
+                        color = selectedImage.getPixelReader().getColor(i1, j1);
+                        double r = color.getRed();
+                        double g = color.getGreen();
+                        double b = color.getBlue();
+                        R = (int) (r * 255);
+                        G = (int) (g * 255);
+                        B = (int) (b * 255);
+                        R1 += (R * maska[i - i1 + 1][j - j1 + 1]);
+                        G1 += (G * maska[i - i1 + 1][j - j1 + 1]);
+                        B1 += (B * maska[i - i1 + 1][j - j1 + 1]);
+                    }
+                }
+
+                R1 = R1 / K;
+                G1 = G1 / K;
+                B1 = B1 / K;
+                if (R1 > 255) {
+                    R1 = 255;
+                }
+                if (G1 > 255) {
+                    G1 = 255;
+                }
+                if (B1 > 255) {
+                    B1 = 255;
+                }
+                if (R1 < 0) {
+                    R1 = 0;
+                }
+                if (G1 < 0) {
+                    G1 = 0;
+                }
+                if (B1 < 0) {
+                    B1 = 0;
+                }
+
+                filterColor = Color.rgb(R1, G1, B1);
+
+                if (i == 1) {
+                    pixelWriter.setColor(0, j, filterColor);
+                }
+                if (j == 1) {
+                    pixelWriter.setColor(i, 0, filterColor);
+                }
+                if (i == selectedImage.getWidth()) {
+                    pixelWriter.setColor(i + 1, j, filterColor);
+                }
+                if (j == selectedImage.getHeight()) {
+                    pixelWriter.setColor(i, j + 1, filterColor);
+                }
+
+
+                pixelWriter.setColor(i, j, filterColor);
+            }
+        }
+
+        return writableImage;
+    }
+
+    private int[][] decode(String mask) {
+        int[][] defaultMask = new int[][] {{1,1,1}, {1, 1, 1}, {1, 1, 1}};
+        if (mask.isBlank()) {
+            return defaultMask;
+        }
+        String[] s = mask.split(";");
+        int len = s.length;
+        if (Math.sqrt(len * 1.0) % 1 != 0) {
+            System.out.println("zła format maski!");
+            return defaultMask;
+        }
+        int size = (int) Math.sqrt(len);
+        int[][] maska = new int[size][size];
+        int k = 0;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                maska[i][j] = Integer.parseInt(s[k]);
+                k++;
+            }
+        }
+        return maska;
+
+    }
+
     public void setWritableImage(WritableImage writableImage) {
         this.writableImage = writableImage;
     }
-    
+
     public void setPixelWriter(PixelWriter pixelWriter) {
         this.pixelWriter = pixelWriter;
     }
@@ -252,5 +358,10 @@ public class CalcHistDemo {
 
     public void setSelectedImage(Image selectedImage) {
         this.selectedImage = selectedImage;
+    }
+
+    public static void main(String[] args) {
+        CalcHistDemo c = new CalcHistDemo();
+        System.out.println(Arrays.deepToString(c.decode("1;1;1;1;1;1;1;1;1")));
     }
 }

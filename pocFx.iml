@@ -10,6 +10,21 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/opencv/build/java/opencv-455.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <NATIVE>
+          <root url="file://$USER_HOME$/opencv/build/java/x64" />
+        </NATIVE>
+        <SOURCES>
+          <root url="jar://$USER_HOME$/opencv/build/java/opencv-455.jar!/" />
+          <root url="jar://$USER_HOME$/opencv/build/java/opencv-455.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
     <orderEntry type="library" name="Maven: org.openjfx:javafx-controls:11.0.2" level="project" />
     <orderEntry type="library" name="Maven: org.openjfx:javafx-controls:win:11.0.2" level="project" />
     <orderEntry type="library" name="Maven: org.openjfx:javafx-graphics:11.0.2" level="project" />
@@ -26,20 +41,5 @@
     <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-engine:1.7.1" level="project" />
     <orderEntry type="library" name="Maven: org.openjfx:javafx-swing:11.0.2" level="project" />
     <orderEntry type="library" name="Maven: org.openjfx:javafx-swing:win:11.0.2" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$USER_HOME$/opencv/build/java/opencv-455.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <NATIVE>
-          <root url="file://$USER_HOME$/opencv/build/java/x64" />
-        </NATIVE>
-        <SOURCES>
-          <root url="jar://$USER_HOME$/opencv/build/java/opencv-455.jar!/" />
-          <root url="jar://$USER_HOME$/opencv/build/java/opencv-455.jar!/" />
-        </SOURCES>
-      </library>
-    </orderEntry>
   </component>
 </module>

@@ -25,7 +25,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-public class HelloApplication extends Application {
+public class ImageProcessingApp extends Application {
 
     private HBox buttonHbox;
     private Button loadImageBtn;
@@ -39,10 +39,12 @@ public class HelloApplication extends Application {
     private Button selectImageBtn;
     private Button selectImageBtn1;
     private Button imageSubtractionBtn;
+    private Button imageFilterBtn;
 
 
     private TextField min;
     private TextField max;
+    private TextField maskFilter;
 
     private ImageView imageView;
     private ImageView imageView1;
@@ -65,8 +67,9 @@ public class HelloApplication extends Application {
         Scene scene = new Scene(p);
 
         primaryStage.setTitle("POC1");
-        primaryStage.setWidth(800);
+        primaryStage.setWidth(1000);
         primaryStage.setHeight(800);
+        primaryStage.setMaximized(true);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -85,10 +88,19 @@ public class HelloApplication extends Application {
         selectImageBtn = new Button("Select");
         selectImageBtn1 = new Button("Select");
         imageSubtractionBtn = new Button("Subtract images");
+        imageFilterBtn = new Button("Filter");
         min = new TextField();
         max = new TextField();
+        maskFilter = new TextField();
+        maskFilter.setPromptText("np. 1;2;3;1;2;3;1;2;3");
         max.setTextFormatter(new TextFormatter<>(c -> {
             if (!c.getText().matches("\\d")) {
+                c.setText("");
+            }
+            return c;
+        }));
+        maskFilter.setTextFormatter(new TextFormatter<>(c -> {
+            if (!c.getText().matches("\\d") && !c.getText().equals(";") && !c.getText().equals("-")) {
                 c.setText("");
             }
             return c;
@@ -158,6 +170,8 @@ public class HelloApplication extends Application {
             }
         });
 
+        imageFilterBtn.setOnAction(this::filterImage);
+
         imageViewResult = new ImageView();
         imageViewResult.setFitWidth(350);
         imageViewResult.setFitHeight(350);
@@ -166,10 +180,6 @@ public class HelloApplication extends Application {
 
         return vbox;
 
-    }
-
-    private void imageSubtraction(ActionEvent actionEvent) throws IOException {
-        imageViewResult.setImage(calcHistDemo.imageSubtraction());
     }
 
     private VBox organizeNodes() {
@@ -187,10 +197,19 @@ public class HelloApplication extends Application {
         VBox imageViewVbox = new VBox(imageView, imageButtonHbox);
         VBox imageViewVbox1 = new VBox(imageView1, imageButtonHbox1);
         HBox imageHbox = new HBox(imageViewVbox, imageViewVbox1);
-        buttonHbox.getChildren().addAll(doSomethingBtn, greyBtn, greyBtn1, calcHistBtn, saveBtn, thresholdingBtn, min, max, imageSubtractionBtn);
+        buttonHbox.getChildren().addAll(doSomethingBtn, greyBtn, greyBtn1, calcHistBtn, saveBtn,
+                thresholdingBtn, min, max, imageSubtractionBtn, imageFilterBtn, maskFilter);
 
         vbox.getChildren().addAll(buttonHbox, imageHbox, imageViewResult);
         return vbox;
+    }
+
+    private void filterImage(ActionEvent actionEvent) {
+        imageViewResult.setImage(calcHistDemo.imageFilter(maskFilter.getText()));
+    }
+
+    private void imageSubtraction(ActionEvent actionEvent) throws IOException {
+        imageViewResult.setImage(calcHistDemo.imageSubtraction());
     }
 
     /**Progowanie (ang. thresholding) – metoda uzyskiwania obrazu binarnego (posiadającego tylko kolor
@@ -201,7 +220,6 @@ public class HelloApplication extends Application {
     // funkcja wykorzystuje podany przez uzytkownika prog lub, jesli nie jest podany uzyta zostanie wartosc wyliczona z histogramu
     private void thresholding(ActionEvent actionEvent) {
         if (min.getText().isBlank() || max.getText().isBlank()) {
-            System.out.println(calcHistDemo);
             imageViewResult.setImage(calcHistDemo.calcThreshold());
         } else {
             int minimum = Integer.parseInt(min.getText());
