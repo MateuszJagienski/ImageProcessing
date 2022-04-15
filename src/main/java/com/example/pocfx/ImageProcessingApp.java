@@ -100,7 +100,7 @@ public class ImageProcessingApp extends Application {
             return c;
         }));
         maskFilter.setTextFormatter(new TextFormatter<>(c -> {
-            if (!c.getText().matches("\\d") && !c.getText().equals(";") && !c.getText().equals("-")) {
+            if (!c.getText().matches("(-*(\\d+)?;?)+")) {
                 c.setText("");
             }
             return c;
