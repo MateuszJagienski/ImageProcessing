@@ -40,6 +40,7 @@ public class ImageProcessingApp extends Application {
     private Button selectImageBtn1;
     private Button imageSubtractionBtn;
     private Button imageFilterBtn;
+    private Button rotateBtn;
 
 
     private TextField min;
@@ -89,6 +90,7 @@ public class ImageProcessingApp extends Application {
         selectImageBtn1 = new Button("Select");
         imageSubtractionBtn = new Button("Subtract images");
         imageFilterBtn = new Button("Filter");
+        rotateBtn = new Button("Rotate");
         min = new TextField();
         max = new TextField();
         maskFilter = new TextField();
@@ -149,6 +151,7 @@ public class ImageProcessingApp extends Application {
                 e.printStackTrace();
             }
         });
+        rotateBtn.setOnAction(this::rotateImage);
         calcHistDemo = new CalcHistDemo();
         imageView = new ImageView();
         imageView1 = new ImageView();
@@ -173,8 +176,8 @@ public class ImageProcessingApp extends Application {
         imageFilterBtn.setOnAction(this::filterImage);
 
         imageViewResult = new ImageView();
-        imageViewResult.setFitWidth(350);
-        imageViewResult.setFitHeight(350);
+        imageViewResult.setFitWidth(500);
+        imageViewResult.setFitHeight(500);
         imageViewResult.setPreserveRatio(true);
         VBox vbox = organizeNodes();
 
@@ -196,11 +199,11 @@ public class ImageProcessingApp extends Application {
 
         VBox imageViewVbox = new VBox(imageView, imageButtonHbox);
         VBox imageViewVbox1 = new VBox(imageView1, imageButtonHbox1);
-        HBox imageHbox = new HBox(imageViewVbox, imageViewVbox1);
+        HBox imageHbox = new HBox(imageViewVbox, imageViewVbox1, imageViewResult);
         buttonHbox.getChildren().addAll(doSomethingBtn, greyBtn, greyBtn1, calcHistBtn, saveBtn,
-                thresholdingBtn, min, max, imageSubtractionBtn, imageFilterBtn, maskFilter);
+                thresholdingBtn, min, max, imageSubtractionBtn, imageFilterBtn, maskFilter, rotateBtn);
 
-        vbox.getChildren().addAll(buttonHbox, imageHbox, imageViewResult);
+        vbox.getChildren().addAll(buttonHbox, imageHbox);
         return vbox;
     }
 
@@ -229,6 +232,7 @@ public class ImageProcessingApp extends Application {
     }
 
     // funkcja zapisujaca aktualnie przegladane zdjecie do pliku, plik jest widoczny w folderze po zamknieciu programu
+
     private void saveImage(ActionEvent actionEvent) {
         if (imageViewResult.getImage() == null) {
             System.out.println("Brak zdjecia do zapisania!");
@@ -236,29 +240,32 @@ public class ImageProcessingApp extends Application {
             saveImageToJpg(imageViewResult.getImage());
         }
     }
-
     // funkcja wywoujaca clase od histogramu
+
     private void calcHist(ActionEvent actionEvent) throws IOException {
         imageViewResult.setImage(calcHistDemo.calcHistogram(copyImage));
     }
-
     // zmienia obraz na odcienie szarosci przez zmiane warotsci RGB ale srednia wylicza z YUV
+
     private void changeGreyYUV(ActionEvent actionEvent) {
         imageViewResult.setImage(calcHistDemo.greyScaleYUV());
     }
 
-
     // funkcja zmienia kolor obrazu przez przypisanie wartoscia R G B wartosci sredniej, obraz zostaje zmieniony w odcienie szarosci
+
     private void changeGreyRGB(ActionEvent actionEvent) {
         imageViewResult.setImage(calcHistDemo.greyScaleRGB());
     }
-
     // funkcja zmienia kolor obrazu w zaleznosci od podanych wartosci R, G, B
+
     private void changeColor(ActionEvent actionEvent) throws NullPointerException {
         imageViewResult.setImage(calcHistDemo.changeColor());
     }
 
-    // funkcja ładująca zdjecia
+    private void rotateImage(ActionEvent actionEvent) {
+        imageViewResult.setImage(calcHistDemo.rotateImage());
+    }
+
     private void uploadImage(ActionEvent actionEvent, ImageView imageView) throws URISyntaxException, IOException {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File("src/main/resources"));
@@ -271,12 +278,15 @@ public class ImageProcessingApp extends Application {
         }
     }
 
+
+
+
     private void loadImage(ImageView imageView, String imageFilename) throws IOException {
         image = new Image(new FileInputStream(imageFilename));
         imageView.setImage(image);
         imageView.setPreserveRatio(true);
-        imageView.setFitHeight(350);
-        imageView.setFitWidth(350);
+        imageView.setFitHeight(500);
+        imageView.setFitWidth(500);
         selectImage(null, image);
     }
 

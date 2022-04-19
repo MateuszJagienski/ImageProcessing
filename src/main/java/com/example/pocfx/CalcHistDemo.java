@@ -72,6 +72,7 @@ public class CalcHistDemo {
     }
 
     public Image calcThreshold() {
+        System.out.println(src);
         Imgproc.cvtColor(src, src, Imgproc.COLOR_BGR2GRAY);
         Imgproc.adaptiveThreshold(src, src, 255.0,
                 Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,
@@ -249,67 +250,99 @@ public class CalcHistDemo {
             }
         }
         if (K == 0) K = 1;
-        for(int i = 1; i < selectedImage.getWidth() - 1; i++) {
-            for (int j = 1; j < selectedImage.getHeight() - 1; j++) {
+        System.out.println(maska.length);
+        int edge = maska.length;
+        for(int i = 0; i < selectedImage.getWidth(); i++) {
+            for (int j = 0; j < selectedImage.getHeight(); j++) {
+                if (i < edge || j < edge || (edge + i) >= selectedImage.getWidth() || (edge + j) >= selectedImage.getHeight()) {
+                    pixelWriter.setColor(i, j, Color.BLACK);
+                } else {
 
-                int R1 = 0;
-                int G1 = 0;
-                int B1 = 0;
 
-                for (int i1 = i - 1; i1 <= i + 1; i1++) {
-                    for (int j1 = j - 1; j1 <= j + 1; j1++) {
-                        color = selectedImage.getPixelReader().getColor(i1, j1);
-                        double r = color.getRed();
-                        double g = color.getGreen();
-                        double b = color.getBlue();
-                        R = (int) (r * 255);
-                        G = (int) (g * 255);
-                        B = (int) (b * 255);
-                        R1 += (R * maska[i - i1 + 1][j - j1 + 1]);
-                        G1 += (G * maska[i - i1 + 1][j - j1 + 1]);
-                        B1 += (B * maska[i - i1 + 1][j - j1 + 1]);
+                    int R1 = 0;
+                    int G1 = 0;
+                    int B1 = 0;
+
+                    for (int i1 = i - 1; i1 <= i + 1; i1++) {
+                        for (int j1 = j - 1; j1 <= j + 1; j1++) {
+                            color = selectedImage.getPixelReader().getColor(i1, j1);
+                            double r = color.getRed();
+                            double g = color.getGreen();
+                            double b = color.getBlue();
+                            R = (int) (r * 255);
+                            G = (int) (g * 255);
+                            B = (int) (b * 255);
+                            R1 += (R * maska[i - i1 + 1][j - j1 + 1]);
+                            G1 += (G * maska[i - i1 + 1][j - j1 + 1]);
+                            B1 += (B * maska[i - i1 + 1][j - j1 + 1]);
+                        }
                     }
-                }
 
-                R1 = R1 / K;
-                G1 = G1 / K;
-                B1 = B1 / K;
-                if (R1 > 255) {
-                    R1 = 255;
-                }
-                if (G1 > 255) {
-                    G1 = 255;
-                }
-                if (B1 > 255) {
-                    B1 = 255;
-                }
-                if (R1 < 0) {
-                    R1 = 0;
-                }
-                if (G1 < 0) {
-                    G1 = 0;
-                }
-                if (B1 < 0) {
-                    B1 = 0;
-                }
+                    R1 = R1 / K;
+                    G1 = G1 / K;
+                    B1 = B1 / K;
+                    if (R1 > 255) {
+                        R1 = 255;
+                    }
+                    if (G1 > 255) {
+                        G1 = 255;
+                    }
+                    if (B1 > 255) {
+                        B1 = 255;
+                    }
+                    if (R1 < 0) {
+                        R1 = 0;
+                    }
+                    if (G1 < 0) {
+                        G1 = 0;
+                    }
+                    if (B1 < 0) {
+                        B1 = 0;
+                    }
 
-                filterColor = Color.rgb(R1, G1, B1);
+                    filterColor = Color.rgb(R1, G1, B1);
 
-                if (i == 1) {
-                    pixelWriter.setColor(0, j, filterColor);
-                }
-                if (j == 1) {
-                    pixelWriter.setColor(i, 0, filterColor);
-                }
-                if (i == selectedImage.getWidth()) {
-                    pixelWriter.setColor(i + 1, j, filterColor);
-                }
-                if (j == selectedImage.getHeight()) {
-                    pixelWriter.setColor(i, j + 1, filterColor);
-                }
+//                if (i == 1) {
+//                    pixelWriter.setColor(0, j, filterColor);
+//                }
+//                if (j == 1) {
+//                    pixelWriter.setColor(i, 0, filterColor);
+//                }
+//                if (i == selectedImage.getWidth()) {
+//                    pixelWriter.setColor(i + 1, j, filterColor);
+//                }
+//                if (j == selectedImage.getHeight()) {
+//                    pixelWriter.setColor(i, j + 1, filterColor);
+//                }
 
 
-                pixelWriter.setColor(i, j, filterColor);
+                    pixelWriter.setColor(i, j, filterColor);
+                }
+            }
+        }
+
+        return writableImage;
+    }
+
+    public Image rotateImage() {
+        writableImage = new WritableImage((int) (4 * selectedImage.getWidth()), (int) (4 * selectedImage.getHeight()));
+        int k = 0;
+        int l = 0;
+        int[][] A = new int [][] {{1,1,1}, {1, 1, 1}, {1, 1, 1}};
+        int[][] B = new int [][] {{l}, {k}, {1}};
+        int[][] C;
+        // static int[][] multiplyMatrix(
+        //            int row1, int col1, int A[][],
+        //            int row2, int col2, int B[][])
+        //    {
+
+        C = MatrixCalc.multiplyMatrix(3,3,A,3,1,B);
+        for (int i = 0; i < 150; i++) {
+            for (int j = 0; j < 150; j++) {
+                B = new int[][]{{i}, {j}, {1}};
+                C = MatrixCalc.multiplyMatrix(3,3,A,3,1,B);
+                System.out.println(C[0][0] + " " + C[1][0]);
+                pixelWriter.setColor(C[0][0], C[1][0], Color.BLACK);
             }
         }
 
