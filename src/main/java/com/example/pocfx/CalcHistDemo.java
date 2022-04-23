@@ -9,7 +9,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+import javafx.scene.transform.MatrixType;
 import org.opencv.core.*;
+import org.opencv.highgui.HighGui;
 import org.opencv.imgproc.Imgproc;
 
 public class CalcHistDemo {
@@ -325,10 +327,12 @@ public class CalcHistDemo {
     }
 
     public Image rotateImage() {
-        writableImage = new WritableImage((int) (4 * selectedImage.getWidth()), (int) (4 * selectedImage.getHeight()));
+        System.out.println(selectedImage.getWidth());
+        writableImage = new WritableImage((int) (selectedImage.getWidth()), (int) (selectedImage.getHeight()));
+        pixelWriter = writableImage.getPixelWriter();
         int k = 0;
         int l = 0;
-        int[][] A = new int [][] {{1,1,1}, {1, 1, 1}, {1, 1, 1}};
+        int[][] A = new int [][] {{1,1,0}, {0, 1, 0}, {0, 0, 1}};
         int[][] B = new int [][] {{l}, {k}, {1}};
         int[][] C;
         // static int[][] multiplyMatrix(
@@ -337,15 +341,22 @@ public class CalcHistDemo {
         //    {
 
         C = MatrixCalc.multiplyMatrix(3,3,A,3,1,B);
-        for (int i = 0; i < 150; i++) {
-            for (int j = 0; j < 150; j++) {
+        for (int i = 0; i < selectedImage.getWidth(); i++) {
+            for (int j = 0; j < selectedImage.getHeight(); j++) {
                 B = new int[][]{{i}, {j}, {1}};
                 C = MatrixCalc.multiplyMatrix(3,3,A,3,1,B);
-                System.out.println(C[0][0] + " " + C[1][0]);
-                pixelWriter.setColor(C[0][0], C[1][0], Color.BLACK);
+                //System.out.println(C[0][0] + " " + C[1][0]);
+                assert C != null;
+                pixelWriter.setColor(C[0][0], C[1][0], selectedImage.getPixelReader().getColor(i, j));
             }
         }
-
+        try {
+            System.out.println(1);
+            HighGui.imshow("aaa", ImageConverter.convertImageFxToMat(writableImage));
+            HighGui.waitKey();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return writableImage;
     }
 

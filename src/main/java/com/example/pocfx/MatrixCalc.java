@@ -23,14 +23,8 @@ public class MatrixCalc {
     // two matrices A[][] and B[][]
     static int[][] multiplyMatrix(
             int row1, int col1, int A[][],
-            int row2, int col2, int B[][])
-    {
+            int row2, int col2, int B[][]) {
         int i, j, k;
-
-        // Print the matrices A and B
-        System.out.println("\nMatrix A:");
-        printMatrix(A, row1, col1);
-        System.out.println("\nMatrix B:");
 
         // Check if multiplication is Possible
         if (row2 != col1) {
@@ -43,7 +37,7 @@ public class MatrixCalc {
         // Matrix to store the result
         // The product matrix will
         // be of size row1 x col2
-        int C[][] = new int[row1][col2];
+        int[][] C = new int[row1][col2];
 
         // Multiply the two matrices
         for (i = 0; i < row1; i++) {
@@ -53,30 +47,7 @@ public class MatrixCalc {
             }
         }
 
-        // Print the result
-        System.out.println("\nResultant Matrix:");
-        printMatrix(C, row1, col2);
-
         return C;
-    }
-
-    // Driver code
-    public static void main(String[] args)
-    {
-
-        int row1 = 3, col1 = 3, row2 = 3, col2 = 1;
-
-        int A[][] = { { -1, 0, 0 },
-                { 0, -1, 0 },
-                { 0, 0, 1 }};
-
-        int B[][] = {
-                    { 4 },
-                    { 100 },
-                    { 1 } };
-
-        multiplyMatrix(row1, col1, A,
-                row2, col2, B);
     }
 }
 
