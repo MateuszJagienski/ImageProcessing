@@ -12,6 +12,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.transform.MatrixType;
 import org.opencv.core.*;
 import org.opencv.highgui.HighGui;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 public class CalcHistDemo {
@@ -326,37 +327,70 @@ public class CalcHistDemo {
         return writableImage;
     }
 
-    public Image rotateImage() {
+    public Image rotateImage(double[] matrix) throws IOException {
         System.out.println(selectedImage.getWidth());
-        writableImage = new WritableImage((int) (selectedImage.getWidth()), (int) (selectedImage.getHeight()));
+        writableImage = new WritableImage((int) (selectedImage.getWidth() * 4), (int) (selectedImage.getHeight() * 4));
         pixelWriter = writableImage.getPixelWriter();
         int k = 0;
         int l = 0;
-        int[][] A = new int [][] {{1,1,0}, {0, 1, 0}, {0, 0, 1}};
-        int[][] B = new int [][] {{l}, {k}, {1}};
-        int[][] C;
-        // static int[][] multiplyMatrix(
-        //            int row1, int col1, int A[][],
-        //            int row2, int col2, int B[][])
-        //    {
+        double[][] A = new double [][] {{1 , 0, 500}, {0, 1, 200}, {0, 0, 1}};
+        double[][] B = new double [][] {{l}, {k}, {1}};
+        double[][] C;
 
         C = MatrixCalc.multiplyMatrix(3,3,A,3,1,B);
-        for (int i = 0; i < selectedImage.getWidth(); i++) {
-            for (int j = 0; j < selectedImage.getHeight(); j++) {
-                B = new int[][]{{i}, {j}, {1}};
-                C = MatrixCalc.multiplyMatrix(3,3,A,3,1,B);
-                //System.out.println(C[0][0] + " " + C[1][0]);
-                assert C != null;
-                pixelWriter.setColor(C[0][0], C[1][0], selectedImage.getPixelReader().getColor(i, j));
-            }
-        }
-        try {
-            System.out.println(1);
-            HighGui.imshow("aaa", ImageConverter.convertImageFxToMat(writableImage));
-            HighGui.waitKey();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        rotateImage1();
+//        for (int i = 0; i < selectedImage.getWidth(); i++) {
+//            for (int j = 0; j < selectedImage.getHeight(); j++) {
+//                B = new double[][]{{i}, {j}, {1}};
+//                C = MatrixCalc.multiplyMatrix(3,3, A,3,1, B);
+//
+//                if (C[0][0] >= 0 && C[1][0] >= 0 && C[0][0] < selectedImage.getWidth() && C[1][0] < selectedImage.getHeight()) {
+//                    pixelWriter.setColor((int) (C[0][0]), (int) (C[1][0]), selectedImage.getPixelReader().getColor(i, j));
+//                } else {
+//                    pixelWriter.setColor(i, j, Color.BLACK);
+//                }
+//            }
+//
+//
+//        }
+
+
+//
+//        try {
+//            System.out.println(1);
+//            HighGui.imshow("aaa", ImageConverter.convertImageFxToMat(writableImage));
+//            HighGui.waitKey();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        return writableImage;
+    }
+
+    public Image rotateImage1() throws IOException {
+        writableImage = new WritableImage((int) (selectedImage.getWidth()), (int) (selectedImage.getHeight()));
+        pixelWriter = writableImage.getPixelWriter();
+
+        int k = 0;
+        int l = 0;
+        float[][] A = new float [][] {{(float) Math.cos(180), (float) -Math.sin(180),0}, {(float) Math.sin(180.0), (float) Math.cos(180.0), 0}, {0, 0, 1}};
+        double[][] B = new double [][] {{l}, {k}, {1}};
+        double[][] C;
+        float[] warp_values = { 1.0f, 0.0f, 5.0f, 0.0f, 1.0f, 5.0f };
+        double[] warp_values1 = { 1.0, 0.0, 200.0, 0.0, 1.0, 220.0 };
+
+        Mat mat = Imgcodecs.imread("C:\\Users\\Mateu\\IdeaProjects\\pocFx\\src\\main\\resources\\images\\@2ea10b.jpg");
+        System.out.println(mat.rows());
+        Mat dst = new Mat(mat.rows() * 2, mat.cols() * 2, mat.type());
+        Mat m = new Mat(2, 3, CvType.CV_64F);
+        //m.put(0, 0, warp_values1);
+        m.put(0, 1, warp_values1);
+        System.out.println(mat.size());
+        Imgproc.warpAffine(mat, dst, m, new Size(700, 700));
+        //Imgproc.warpPerspective(mat, dst, m, mat.size());
+
+        HighGui.imshow("kpofok", dst);
+        HighGui.waitKey();
+
         return writableImage;
     }
 

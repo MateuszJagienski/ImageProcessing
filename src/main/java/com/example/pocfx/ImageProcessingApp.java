@@ -176,8 +176,8 @@ public class ImageProcessingApp extends Application {
         imageFilterBtn.setOnAction(this::filterImage);
 
         imageViewResult = new ImageView();
-        imageViewResult.setFitWidth(5000);
-        imageViewResult.setFitHeight(5000);
+        imageViewResult.setFitWidth(500);
+        imageViewResult.setFitHeight(500);
         imageViewResult.setPreserveRatio(true);
         VBox vbox = organizeNodes();
 
@@ -263,9 +263,17 @@ public class ImageProcessingApp extends Application {
     }
 
     private void rotateImage(ActionEvent actionEvent) {
-        Image im = calcHistDemo.rotateImage();
+        Image im = null;
+        try {
+            im = calcHistDemo.rotateImage(new double[6]);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.out.println(im);
         imageViewResult.setImage(im);
+        System.out.println(imageViewResult.getImage().getHeight());
+        System.out.println(imageViewResult.getX());
+        System.out.println(imageViewResult.fitHeightProperty());
     }
 
     private void uploadImage(ActionEvent actionEvent, ImageView imageView) throws URISyntaxException, IOException {
@@ -279,8 +287,6 @@ public class ImageProcessingApp extends Application {
             loadImage(imageView, imageFilename);
         }
     }
-
-
 
 
     private void loadImage(ImageView imageView, String imageFilename) throws IOException {
