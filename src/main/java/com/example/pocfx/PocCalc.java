@@ -1,11 +1,21 @@
 package com.example.pocfx;
 
+import javafx.application.Application;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.transform.Transform;
+import javafx.scene.transform.Translate;
+import javafx.stage.Stage;
 
-public class PocCalc {
+import java.io.FileInputStream;
+
+public class PocCalc extends Application {
 
     private PixelWriter pixelWriter;
     private WritableImage writableImage;
@@ -52,5 +62,25 @@ public class PocCalc {
 
     public Image treshold(Image image) {
         return writableImage;
+    }
+
+
+    @Override
+    public void start(Stage stage) throws Exception {
+        ImageView imageView = new ImageView();
+        imageView.setImage(new Image(new FileInputStream("src/main/resources/Images/jp2.jpg")));
+        ImageView imageView1 = new ImageView();
+        Transform transform = new Translate();
+
+
+        Parent p = new VBox();
+        Scene scene = new Scene(p);
+        stage.setScene(scene);
+        stage.setTitle("POC1");
+        stage.setWidth(1000);
+        stage.setHeight(800);
+        stage.setMaximized(true);
+        stage.setScene(scene);
+        stage.show();
     }
 }

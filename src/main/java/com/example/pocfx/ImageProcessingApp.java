@@ -42,6 +42,13 @@ public class ImageProcessingApp extends Application {
     private Button imageFilterBtn;
     private Button rotateBtn;
 
+    private Slider slider11;
+    private Slider slider12;
+    private Slider slider21;
+    private Slider slider22;
+    private Slider slidertx;
+    private Slider sliderty;
+
 
     private TextField min;
     private TextField max;
@@ -175,13 +182,57 @@ public class ImageProcessingApp extends Application {
 
         imageFilterBtn.setOnAction(this::filterImage);
 
+
         imageViewResult = new ImageView();
-        imageViewResult.setFitWidth(500);
-        imageViewResult.setFitHeight(500);
+        imageViewResult.setFitWidth(700);
+        imageViewResult.setFitHeight(700);
         imageViewResult.setPreserveRatio(true);
+
+        organizeSliders();
         VBox vbox = organizeNodes();
 
         return vbox;
+
+    }
+
+    private void organizeSliders() {
+        slider11 = new Slider(-2, 2, 1);
+        slider11.setShowTickMarks(true);
+        slider11.setShowTickLabels(true);
+        slider11.setMajorTickUnit(0.25f);
+        slider11.setBlockIncrement(0.1f);
+
+        slider12 = new Slider(-2, 2, 0);
+        slider12.setShowTickMarks(true);
+        slider12.setShowTickLabels(true);
+        slider12.setMajorTickUnit(0.25f);
+        slider12.setBlockIncrement(0.1f);
+
+        slider21 = new Slider(-2, 2, 0);
+        slider21.setShowTickMarks(true);
+        slider21.setShowTickLabels(true);
+        slider21.setMajorTickUnit(0.25f);
+        slider21.setBlockIncrement(0.1f);
+
+        slider22 = new Slider(-2, 2, 1);
+        slider22.setShowTickMarks(true);
+        slider22.setShowTickLabels(true);
+        slider22.setMajorTickUnit(0.25f);
+        slider22.setBlockIncrement(0.1f);
+
+        slidertx = new Slider(-1000, 1000, 0);
+        slidertx.setShowTickMarks(true);
+        slidertx.setShowTickLabels(true);
+        slidertx.setMajorTickUnit(50);
+        slidertx.setBlockIncrement(25);
+
+        sliderty = new Slider(-1000, 1000, 0);
+        sliderty.setShowTickMarks(true);
+        sliderty.setShowTickLabels(true);
+        sliderty.setMajorTickUnit(50);
+        sliderty.setBlockIncrement(25);
+
+
 
     }
 
@@ -199,7 +250,8 @@ public class ImageProcessingApp extends Application {
 
         VBox imageViewVbox = new VBox(imageView, imageButtonHbox);
         VBox imageViewVbox1 = new VBox(imageView1, imageButtonHbox1);
-        HBox imageHbox = new HBox(imageViewVbox, imageViewVbox1, imageViewResult);
+        VBox imageViewSliders = new VBox(imageViewResult, slider11, slider12, slider21, slider22, slidertx, sliderty);
+        HBox imageHbox = new HBox(imageViewVbox, imageViewVbox1, imageViewSliders);
         buttonHbox.getChildren().addAll(doSomethingBtn, greyBtn, greyBtn1, calcHistBtn, saveBtn,
                 thresholdingBtn, min, max, imageSubtractionBtn, imageFilterBtn, maskFilter, rotateBtn);
 
@@ -263,9 +315,15 @@ public class ImageProcessingApp extends Application {
     }
 
     private void rotateImage(ActionEvent actionEvent) {
+        double s11 = slider11.getValue();
+        double s12 = slider12.getValue();
+        double s21 = slider21.getValue();
+        double s22 = slider22.getValue();
+        double stx = slidertx.getValue();
+        double sty = sliderty.getValue();
         Image im = null;
         try {
-            im = calcHistDemo.rotateImage(new double[6]);
+            im = calcHistDemo.rotateImage(new double[6], s11, s12, s21, s22, stx, sty);
         } catch (IOException e) {
             e.printStackTrace();
         }
