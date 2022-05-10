@@ -10,13 +10,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
-import javafx.scene.transform.MatrixType;
 import org.opencv.core.*;
-import org.opencv.highgui.HighGui;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-public class CalcHistDemo {
+public class CalcDemo {
 
     private Mat src;
     private Mat histImage;
@@ -76,7 +73,6 @@ public class CalcHistDemo {
     }
 
     public Image calcThreshold() {
-        System.out.println(src);
         Imgproc.cvtColor(src, src, Imgproc.COLOR_BGR2GRAY);
         Imgproc.adaptiveThreshold(src, src, 255.0,
                 Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,
@@ -95,8 +91,6 @@ public class CalcHistDemo {
         int avg;
         Color color;
         Color color1;
-        System.out.println(maximum);
-        System.out.println(minimum);
         for(int i = 0; i< firstImage.getWidth(); i++) {
             for (int j = 0; j < firstImage.getHeight(); j++) {
                 color = firstImage.getPixelReader().getColor(i,j);
@@ -305,19 +299,16 @@ public class CalcHistDemo {
     }
 
     public Image rotateImage(double[] matrix, double s11, double s12, double s21, double s22, double stx, double sty) throws IOException {
-        Image scaleImage = scale(selectedImage, 500, 500, true);
-        writableImage = new WritableImage(700, 700);
-        pixelWriter = writableImage.getPixelWriter();
-        int k = 0;
-        int l = 0;
-        double[][] A = new double [][] {{1 , Math.sin(30.0), 0}, {0, 1, 0}, {0, 0, 1}};
+        Image scaleImage = scale(selectedImage, 350, 350, true);
+        WritableImage writableImage1 = new WritableImage(500, 500);
+        PixelWriter pixelWriter1 = writableImage1.getPixelWriter();
         double[][] D = new double [][] {{s11 , s12, stx}, {s21, s22, sty}, {0, 0, 1}};
-        double[][] B = new double [][] {{l}, {k}, {1}};
+        double[][] B;
         double[][] C;
 
-        for (int i = 0; i < writableImage.getWidth(); i++) {
-            for (int j = 0; j < writableImage.getHeight(); j++) {
-                pixelWriter.setColor(i, j, Color.BLACK);
+        for (int i = 0; i < writableImage1.getWidth(); i++) {
+            for (int j = 0; j < writableImage1.getHeight(); j++) {
+                pixelWriter1.setColor(i, j, Color.BLACK);
             }
         }
 
@@ -330,13 +321,13 @@ public class CalcHistDemo {
                             && C[1][0] >= 0
                             && i < scaleImage.getWidth()
                             && j < scaleImage.getHeight()) {
-                        pixelWriter.setColor((int) (C[0][0]), (int) (C[1][0]), scaleImage.getPixelReader().getColor(i, j));
+                        pixelWriter1.setColor((int) (C[0][0]), (int) (C[1][0]), scaleImage.getPixelReader().getColor(i, j));
                     }
                 } catch (Exception ignored) {
                 }
             }
         }
-        return writableImage;
+        return writableImage1;
     }
 
     private int[][] decode(String mask) {

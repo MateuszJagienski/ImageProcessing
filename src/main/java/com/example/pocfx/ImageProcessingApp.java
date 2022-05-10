@@ -66,7 +66,7 @@ public class ImageProcessingApp extends Application {
     private int imageWidth;
     private int imageHeight;
     private String imageFilename;
-    private CalcHistDemo calcHistDemo;
+    private CalcDemo calcDemo;
 
     @Override
     public void start(Stage primaryStage) throws IOException {
@@ -159,7 +159,7 @@ public class ImageProcessingApp extends Application {
             }
         });
         rotateBtn.setOnAction(this::rotateImage);
-        calcHistDemo = new CalcHistDemo();
+        calcDemo = new CalcDemo();
         imageView = new ImageView();
         imageView1 = new ImageView();
         loadImage(imageView, "src/main/resources/Images/jp2.jpg");
@@ -184,8 +184,8 @@ public class ImageProcessingApp extends Application {
 
 
         imageViewResult = new ImageView();
-        imageViewResult.setFitWidth(700);
-        imageViewResult.setFitHeight(700);
+        imageViewResult.setFitWidth(500);
+        imageViewResult.setFitHeight(500);
         imageViewResult.setPreserveRatio(true);
 
         organizeSliders();
@@ -201,39 +201,44 @@ public class ImageProcessingApp extends Application {
         slider11.setShowTickLabels(true);
         slider11.setMajorTickUnit(0.25f);
         slider11.setBlockIncrement(0.1f);
+        slider11.valueProperty().addListener((p) -> rotateBtn.fire());
+
 
         slider12 = new Slider(-2, 2, 0);
         slider12.setShowTickMarks(true);
         slider12.setShowTickLabels(true);
         slider12.setMajorTickUnit(0.25f);
         slider12.setBlockIncrement(0.1f);
+        slider12.valueProperty().addListener((p) -> rotateBtn.fire());
+
 
         slider21 = new Slider(-2, 2, 0);
         slider21.setShowTickMarks(true);
         slider21.setShowTickLabels(true);
         slider21.setMajorTickUnit(0.25f);
         slider21.setBlockIncrement(0.1f);
+        slider21.valueProperty().addListener((p) -> rotateBtn.fire());
 
         slider22 = new Slider(-2, 2, 1);
         slider22.setShowTickMarks(true);
         slider22.setShowTickLabels(true);
         slider22.setMajorTickUnit(0.25f);
         slider22.setBlockIncrement(0.1f);
+        slider22.valueProperty().addListener((p) -> rotateBtn.fire());
 
         slidertx = new Slider(-1000, 1000, 0);
         slidertx.setShowTickMarks(true);
         slidertx.setShowTickLabels(true);
         slidertx.setMajorTickUnit(50);
         slidertx.setBlockIncrement(25);
+        slidertx.valueProperty().addListener((p) -> rotateBtn.fire());
 
         sliderty = new Slider(-1000, 1000, 0);
         sliderty.setShowTickMarks(true);
         sliderty.setShowTickLabels(true);
         sliderty.setMajorTickUnit(50);
         sliderty.setBlockIncrement(25);
-
-
-
+        sliderty.valueProperty().addListener((p) -> rotateBtn.fire());
     }
 
     private VBox organizeNodes() {
@@ -256,15 +261,16 @@ public class ImageProcessingApp extends Application {
                 thresholdingBtn, min, max, imageSubtractionBtn, imageFilterBtn, maskFilter, rotateBtn);
 
         vbox.getChildren().addAll(buttonHbox, imageHbox);
+
         return vbox;
     }
 
     private void filterImage(ActionEvent actionEvent) {
-        imageViewResult.setImage(calcHistDemo.imageFilter(maskFilter.getText()));
+        imageViewResult.setImage(calcDemo.imageFilter(maskFilter.getText()));
     }
 
     private void imageSubtraction(ActionEvent actionEvent) throws IOException {
-        imageViewResult.setImage(calcHistDemo.imageSubtraction());
+        imageViewResult.setImage(calcDemo.imageSubtraction());
     }
 
     /**Progowanie (ang. thresholding) – metoda uzyskiwania obrazu binarnego (posiadającego tylko kolor
@@ -275,16 +281,15 @@ public class ImageProcessingApp extends Application {
     // funkcja wykorzystuje podany przez uzytkownika prog lub, jesli nie jest podany uzyta zostanie wartosc wyliczona z histogramu
     private void thresholding(ActionEvent actionEvent) {
         if (min.getText().isBlank() || max.getText().isBlank()) {
-            imageViewResult.setImage(calcHistDemo.calcThreshold());
+            imageViewResult.setImage(calcDemo.calcThreshold());
         } else {
             int minimum = Integer.parseInt(min.getText());
             int maximum = Integer.parseInt(max.getText());
-            imageViewResult.setImage(calcHistDemo.calcThresholdWithUserInput(minimum, maximum));
+            imageViewResult.setImage(calcDemo.calcThresholdWithUserInput(minimum, maximum));
         }
     }
 
     // funkcja zapisujaca aktualnie przegladane zdjecie do pliku, plik jest widoczny w folderze po zamknieciu programu
-
     private void saveImage(ActionEvent actionEvent) {
         if (imageViewResult.getImage() == null) {
             System.out.println("Brak zdjecia do zapisania!");
@@ -295,23 +300,23 @@ public class ImageProcessingApp extends Application {
     // funkcja wywoujaca clase od histogramu
 
     private void calcHist(ActionEvent actionEvent) throws IOException {
-        imageViewResult.setImage(calcHistDemo.calcHistogram(copyImage));
+        imageViewResult.setImage(calcDemo.calcHistogram(copyImage));
     }
     // zmienia obraz na odcienie szarosci przez zmiane warotsci RGB ale srednia wylicza z YUV
 
     private void changeGreyYUV(ActionEvent actionEvent) {
-        imageViewResult.setImage(calcHistDemo.greyScaleYUV());
+        imageViewResult.setImage(calcDemo.greyScaleYUV());
     }
 
     // funkcja zmienia kolor obrazu przez przypisanie wartoscia R G B wartosci sredniej, obraz zostaje zmieniony w odcienie szarosci
 
     private void changeGreyRGB(ActionEvent actionEvent) {
-        imageViewResult.setImage(calcHistDemo.greyScaleRGB());
+        imageViewResult.setImage(calcDemo.greyScaleRGB());
     }
     // funkcja zmienia kolor obrazu w zaleznosci od podanych wartosci R, G, B
 
     private void changeColor(ActionEvent actionEvent) throws NullPointerException {
-        imageViewResult.setImage(calcHistDemo.changeColor());
+        imageViewResult.setImage(calcDemo.changeColor());
     }
 
     private void rotateImage(ActionEvent actionEvent) {
@@ -323,15 +328,11 @@ public class ImageProcessingApp extends Application {
         double sty = sliderty.getValue();
         Image im = null;
         try {
-            im = calcHistDemo.rotateImage(new double[6], s11, s12, s21, s22, stx, sty);
+            im = calcDemo.rotateImage(new double[6], s11, s12, s21, s22, stx, sty);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(im);
         imageViewResult.setImage(im);
-        System.out.println(imageViewResult.getImage().getHeight());
-        System.out.println(imageViewResult.getX());
-        System.out.println(imageViewResult.fitHeightProperty());
     }
 
     private void uploadImage(ActionEvent actionEvent, ImageView imageView) throws URISyntaxException, IOException {
@@ -364,12 +365,12 @@ public class ImageProcessingApp extends Application {
         imageHeight = (int) image.getHeight();
 
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        calcHistDemo.setWritableImage(writableImage);
-        calcHistDemo.setPixelWriter(pixelWriter);
-        calcHistDemo.setFirstImage(imageView.getImage());
-        calcHistDemo.setSecondImage(imageView1.getImage());
-        calcHistDemo.setSelectedImage(image);
-        calcHistDemo.run();
+        calcDemo.setWritableImage(writableImage);
+        calcDemo.setPixelWriter(pixelWriter);
+        calcDemo.setFirstImage(imageView.getImage());
+        calcDemo.setSecondImage(imageView1.getImage());
+        calcDemo.setSelectedImage(image);
+        calcDemo.run();
     }
 
     // funkacja zapisujaca do pliku
